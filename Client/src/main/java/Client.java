@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class Client {
     public static final String UNIQUE_BINDING_NAME = "server.WordsParsing";
-    public static final List<String> LIST_LINKS = new ArrayList<>();
+    public static final List<String> LIST_LINKS = new LinkedList<>();
     public static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     static Registry registry;
     static WordsParsing wordsParsing;
@@ -26,43 +26,32 @@ public class Client {
             e.printStackTrace();
         }
     }
-
     public static void main(String[] args) throws RemoteException, IOException {
-        Map<String, Words> map = returnCyrillicWords(LIST_LINKS);
+        List<Words> list = returnCyrillicWords(LIST_LINKS);
         String word = reader.readLine();
-        Map<Integer, String> treeMap = getLinkByWord(map, word);
+        List<Words> linkList = getLinkByWord(list, word);
     }
-
-    public static Map<String, Words> returnCyrillicWords(List<String> links) throws RemoteException, IOException {
+    public static List<Words> returnCyrillicWords(List<String> links) throws RemoteException, IOException {
         Map<String, Words> map = null;
         List<Words> list = new ArrayList<>();
         for(String link : links){
             map = wordsParsing.returnCyrillicWords(link);
             for(Map.Entry<String, Words> entry : map.entrySet()){
-                System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount());
+                System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount() + " " + entry.getValue().getLink());
                 list.add(entry.getValue());
             }
 
             System.out.println("______________________________________________________");
 
         }
-        System.out.println("FINAL");
-        System.out.println();
-        for(Words words : list){
-            System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount());
-        }
-        System.out.println();
-        System.out.println("SECOND FINAL");
 
-        return map;
+        return list;
     }
-
-    public static Map<Integer, String> getLinkByWord(Map<String, Words> map, String word) throws RemoteException{
-        Map<Integer, String> treeMap = wordsParsing.getLinkByWord(map, word);
-        for(Map.Entry<Integer, String> entry : treeMap.entrySet()){
-            System.out.println(entry.getValue() + " " + entry.getKey());
+    public static List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException{
+        List<Words> currentList = wordsParsing.getLinkByWord(list, word);
+        for(Words words : currentList){
+            System.out.println(words.getLink() + " " + words.getWordCount());
         }
-        return treeMap;
+        return currentList;
     }
-
 }

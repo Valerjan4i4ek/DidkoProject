@@ -5,7 +5,6 @@ public class Words implements Serializable, Comparable<Words> {
     private int id;
     private String wordName;
     private int wordCount;
-
     private String link;
 
     public Words(int id, String wordName, int wordCount, String link) {

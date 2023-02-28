@@ -4,12 +4,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.Callable;
 
-public class RemoteWordsParsingServer implements WordsParsing{
+public class RemoteWordsParsingServer implements WordsParsing {
     private final static String USER_AGENT = "Chrome/104.0.0.0";
+    static MySQLClass sql = new MySQLClass();
+    static WordsCache wordsCache = new WordsCache();
 
     public static String getURLData(String link) throws IOException {
         URL urlObject = new URL(link);
@@ -32,7 +33,6 @@ public class RemoteWordsParsingServer implements WordsParsing{
 
         return response.toString();
     }
-
     public StringBuffer parsingCyrillicWords(String link) throws IOException {
         String result = getURLData(link);
         StringBuffer sb = new StringBuffer();
@@ -40,7 +40,6 @@ public class RemoteWordsParsingServer implements WordsParsing{
             if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
                 if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
                     sb.append(result.charAt(i) + " ");
-
                 }
                 else if(result.charAt(i-1)==0 && result.charAt(i+1)==0){
                     sb.append(result.charAt(i) + " ");
@@ -60,34 +59,59 @@ public class RemoteWordsParsingServer implements WordsParsing{
         Map<String, Words> map = new HashMap<>();
         String word = stringBuffer.toString().toLowerCase();
         String[] words = word.split(" ");
+        Words wordAddToDatabase;
         for(String s : words){
             if(map != null && !map.isEmpty()){
-                if(map.containsKey(s)){
-                    map.replace(s, new Words(map.get(s).getId(), s, map.get(s).getWordCount()+1, link));
+                if(map.containsKey(s) && map.get(s).getLink().equals(link)){
+                    wordAddToDatabase = new Words(map.get(s).getId(), s, map.get(s).getWordCount()+1, link);
+                    if(getWordsCache(wordAddToDatabase) == null){
+                        addWordsCache(wordAddToDatabase);
+                    }
+                    map.replace(s, wordAddToDatabase);
+                    sql.replaceWord(wordAddToDatabase);
                 }
                 else {
-                    map.put(s, new Words(map.size() + 1, s, 1, link));
+                    wordAddToDatabase = new Words(map.size() + 1, s, 1, link);
+                    map.put(s, wordAddToDatabase);
+                    addWordsCache(wordAddToDatabase);
+                    sql.addWords(wordAddToDatabase);
                 }
             }
             else{
-                map.put(s, new Words(1, s, 1, link));
+                wordAddToDatabase = new Words(1, s, 1, link);
+                map.put(s, wordAddToDatabase);
+                addWordsCache(wordAddToDatabase);
+                sql.addWords(wordAddToDatabase);
             }
         }
         return map;
     }
-
     @Override
     public Map<String, Words> returnCyrillicWords(String link) throws RemoteException, IOException {
         return addWord(parsingCyrillicWords(link), link);
     }
 
     @Override
-    public Map<Integer, String> getLinkByWord(Map<String, Words> map, String word) throws RemoteException {
-        Map<Integer, String> returnMap = new TreeMap<>();
-        if (map.containsKey(word)){
-            returnMap.put(map.get(word).getWordCount(), map.get(word).getLink());
+    public List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException {
+        List<Words> returnList = new ArrayList<>();
+        for(Words words : list){
+            if(words.getWordName().equals(word)){
+                returnList.add(words);
+            }
         }
+        Collections.sort(returnList);
 
-        return returnMap;
+        return returnList;
+    }
+
+    public static void addWordsCache(Words words){
+        wordsCache.addWordsCache(words);
+    }
+
+    public static Words getWordsCache(Words words){
+        if(wordsCache.getWordsCache(words) != null){
+            return wordsCache.getWordsCache(words);
+        }
+        return null;
     }
 }
