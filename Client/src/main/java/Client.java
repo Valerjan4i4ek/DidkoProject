@@ -34,6 +34,7 @@ public class Client {
     public static List<Words> returnCyrillicWords(List<String> links) throws RemoteException, IOException {
         Map<String, Words> map = null;
         List<Words> list = new ArrayList<>();
+
         for(String link : links){
             map = wordsParsing.returnCyrillicWords(link);
             for(Map.Entry<String, Words> entry : map.entrySet()){
