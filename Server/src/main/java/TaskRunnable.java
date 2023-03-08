@@ -4,66 +4,31 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
-public class Task implements Callable<StringBuffer> {
-    private final static String USER_AGENT = "Chrome/104.0.0.0";
-    private String link;
+public class TaskRunnable implements Runnable{
+//    private final static String USER_AGENT = "Chrome/104.0.0.0";
+    private List<String> listLinks;
 
-    public Task(String link) {
-        this.link = link;
+    public TaskRunnable(List<String> listLinks) {
+        this.listLinks = listLinks;
     }
 
-    public String getLink() {
-        return link;
-    }
+//    public List<String> getListLinks() {
+//        return listLinks;
+//    }
 
     @Override
-    public StringBuffer call() throws Exception {
-        return parsingCyrillicWords(getLink());
-    }
-
-    public static String getURLData(String link) throws IOException {
-        URL urlObject = new URL(link);
-        HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", USER_AGENT);
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode == 404) {
-            throw new IllegalArgumentException();
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
-
-        return response.toString();
-    }
-    public static StringBuffer parsingCyrillicWords(String link) throws IOException {
-        String result = getURLData(link);
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < result.length(); i++) {
-            if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
-                if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else if(result.charAt(i-1)==0 && result.charAt(i+1)==0){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else if(result.charAt(i+1)=='.' || result.charAt(i+1)==',' || result.charAt(i+1)=='?'){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else{
-                    sb.append(result.charAt(i));
-                }
+    public void run() {
+        try {
+            if (listLinks != null && !listLinks.isEmpty()){
+                System.out.println("Start " + Thread.currentThread().getId());
+                Thread.sleep(1000);
+                System.out.println("Finish " + Thread.currentThread().getId());
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        return sb;
     }
 //    public static Map<String, List<StringBuffer>> getURLData(List<String> links) throws IOException {
 //        List<StringBuffer> listLinks = new LinkedList<>();
@@ -92,7 +57,7 @@ public class Task implements Callable<StringBuffer> {
 //
 //        return map;
 //    }
-//    public Map<String, List<StringBuffer>> parsingCyrillicWords(List<String> links) throws IOException {
+//    public static Map<String, List<StringBuffer>> parsingCyrillicWords(List<String> links) throws IOException {
 //        Map<String, List<StringBuffer>> map = getURLData(links);
 //        Map<String, List<StringBuffer>> returnMap = new LinkedHashMap<>();
 //        List<StringBuffer> list = new ArrayList<>();
@@ -126,5 +91,5 @@ public class Task implements Callable<StringBuffer> {
 //            }
 //        }
 //        return returnMap;
-//    }
+
 }

@@ -12,6 +12,7 @@ public class RemoteWordsParsingServer implements WordsParsing {
     static MySQLClass sql = new MySQLClass();
     static WordsCache wordsCache = new WordsCache();
     ExecutorService executorService = Executors.newFixedThreadPool(3);
+    ScheduledExecutorService ses = Executors.newScheduledThreadPool(10);
     public static String getURLData(String link) throws IOException {
         URL urlObject = new URL(link);
         HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
@@ -87,36 +88,40 @@ public class RemoteWordsParsingServer implements WordsParsing {
         return map;
     }
     @Override
-    public Map<String, Words> returnCyrillicWords(String link) throws RemoteException, IOException {
-        Map<String, Words> map = new LinkedHashMap<>();
-        Map<String, Words> returnMap = new LinkedHashMap<>();
-        List<Future<StringBuffer>> futures = new ArrayList<>();
-        Callable<StringBuffer> callable = new Task(link);
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < 3; i++) {
-            Future<StringBuffer> future = executorService.submit(callable);
-            futures.add(future);
-        }
-        for(Future<StringBuffer> future : futures){
-            try {
-                sb = future.get();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-            map = addWord(sb, link);
-            returnMap.putAll(map);
-        }
-        return returnMap;
-//        try {
-//            return addWord(new FutureTask<StringBuffer>(new Task(link)).get(), link);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        } catch (ExecutionException e) {
-//            throw new RuntimeException(e);
-//        }
+    public Map<String, Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException {
+        Map<String, Words> addMap = new HashMap<>();
+        Map<String, Words> returnMap = new HashMap<>();
+        List<WordsAndLinks> list = new LinkedList<>();
 
+        TaskRunnable taskRunnable = new TaskRunnable(listLinks);
+        TaskCallable taskCallable = new TaskCallable(listLinks);
+        ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
+        System.out.println("scheduledFuture");
+
+        Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
+        System.out.println("executorService 1");
+
+        try {
+            list = sub.get();
+            System.out.println("executorService 2");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        for(WordsAndLinks wordsAndLinks : list){
+            addMap = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
+            returnMap.putAll(addMap);
+            listLinks.remove(wordsAndLinks.getLink());
+        }
+
+        ses.shutdown();
+        System.out.println("FINISHED scheduledFuture");
+
+        executorService.shutdown();
+        System.out.println("FINISHED executorService");
+
+        return returnMap;
     }
 
     @Override
@@ -142,4 +147,38 @@ public class RemoteWordsParsingServer implements WordsParsing {
         }
         return null;
     }
+
+//    @Override
+//    public Map<String, Words> returnCyrillicWords(String link) throws RemoteException, IOException {
+//        Map<String, Words> map = new LinkedHashMap<>();
+//        Map<String, Words> returnMap = new LinkedHashMap<>();
+//        List<Future<StringBuffer>> futures = new ArrayList<>();
+//        Callable<StringBuffer> callable = new Task(link);
+//        StringBuffer sb = new StringBuffer();
+//
+//        for (int i = 0; i < 3; i++) {
+//            Future<StringBuffer> future = executorService.submit(callable);
+//            futures.add(future);
+//        }
+//        for(Future<StringBuffer> future : futures){
+//            try {
+//                sb = future.get();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            } catch (ExecutionException e) {
+//                throw new RuntimeException(e);
+//            }
+//            map = addWord(sb, link);
+//            returnMap.putAll(map);
+//        }
+//        return returnMap;
+////        try {
+////            return addWord(new FutureTask<StringBuffer>(new Task(link)).get(), link);
+////        } catch (InterruptedException e) {
+////            throw new RuntimeException(e);
+////        } catch (ExecutionException e) {
+////            throw new RuntimeException(e);
+////        }
+//
+//    }
 }

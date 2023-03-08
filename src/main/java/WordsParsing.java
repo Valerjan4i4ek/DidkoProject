@@ -6,6 +6,6 @@ import java.util.Map;
 
 public interface WordsParsing extends Remote {
 
-    Map<String, Words> returnCyrillicWords(String link) throws RemoteException, IOException;
+    Map<String, Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException;
     List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException;
 }
