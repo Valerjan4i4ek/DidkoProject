@@ -97,9 +97,12 @@ public class RemoteWordsParsingServer implements WordsParsing {
         TaskCallable taskCallable = new TaskCallable(listLinks);
         ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
         System.out.println("scheduledFuture");
+//        executorService.submit(taskCallable);
+//        System.out.println("executorService");
 
         Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
         System.out.println("executorService 1");
+
 
         try {
             list = sub.get();
@@ -114,6 +117,9 @@ public class RemoteWordsParsingServer implements WordsParsing {
             returnMap.putAll(addMap);
             listLinks.remove(wordsAndLinks.getLink());
         }
+        System.out.println("after try catch");
+
+
 
         ses.shutdown();
         System.out.println("FINISHED scheduledFuture");

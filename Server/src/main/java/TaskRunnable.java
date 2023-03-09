@@ -7,16 +7,11 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class TaskRunnable implements Runnable{
-//    private final static String USER_AGENT = "Chrome/104.0.0.0";
     private List<String> listLinks;
 
     public TaskRunnable(List<String> listLinks) {
         this.listLinks = listLinks;
     }
-
-//    public List<String> getListLinks() {
-//        return listLinks;
-//    }
 
     @Override
     public void run() {
@@ -30,66 +25,6 @@ public class TaskRunnable implements Runnable{
             throw new RuntimeException(e);
         }
     }
-//    public static Map<String, List<StringBuffer>> getURLData(List<String> links) throws IOException {
-//        List<StringBuffer> listLinks = new LinkedList<>();
-//        Map<String, List<StringBuffer>> map = new LinkedHashMap<>();
-//        for(String link : links){
-//            URL urlObject = new URL(link);
-//            HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
-//            connection.setRequestMethod("GET");
-//            connection.setRequestProperty("User-Agent", USER_AGENT);
-//
-//            int responseCode = connection.getResponseCode();
-//            if (responseCode == 404) {
-//                throw new IllegalArgumentException();
-//            }
-//
-//            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//            String inputLine;
-//            StringBuffer response = new StringBuffer();
-//            while ((inputLine = in.readLine()) != null) {
-//                response.append(inputLine);
-//                listLinks.add(response);
-//            }
-//            map.put(link, listLinks);
-//            in.close();
-//        }
-//
-//        return map;
-//    }
-//    public static Map<String, List<StringBuffer>> parsingCyrillicWords(List<String> links) throws IOException {
-//        Map<String, List<StringBuffer>> map = getURLData(links);
-//        Map<String, List<StringBuffer>> returnMap = new LinkedHashMap<>();
-//        List<StringBuffer> list = new ArrayList<>();
-//        StringBuffer sb = new StringBuffer();
-//        for(Map.Entry<String, List<StringBuffer>> entry : map.entrySet()){
-//            for(StringBuffer result : entry.getValue()){
-//                for (int i = 0; i < result.length(); i++) {
-//                    if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
-//                        if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
-//                            sb.append(result.charAt(i) + " ");
-//                            list.add(sb);
-//                            returnMap.put(entry.getKey(), list);
-//                        }
-//                        else if(result.charAt(i-1)==0 && result.charAt(i+1)==0){
-//                            sb.append(result.charAt(i) + " ");
-//                            list.add(sb);
-//                            returnMap.put(entry.getKey(), list);
-//                        }
-//                        else if(result.charAt(i+1)=='.' || result.charAt(i+1)==',' || result.charAt(i+1)=='?'){
-//                            sb.append(result.charAt(i) + " ");
-//                            list.add(sb);
-//                            returnMap.put(entry.getKey(), list);
-//                        }
-//                        else{
-//                            sb.append(result.charAt(i));
-//                            list.add(sb);
-//                            returnMap.put(entry.getKey(), list);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return returnMap;
+
 
 }
