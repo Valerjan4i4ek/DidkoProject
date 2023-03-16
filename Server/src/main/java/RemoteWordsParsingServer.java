@@ -65,16 +65,15 @@ public class RemoteWordsParsingServer implements WordsParsing {
 
         for(String s : words){
             if(!list.isEmpty()){
-
+                List<Words> list2 = new ArrayList<>(list);
                 for(Words w : list){
-                    List<Words> list2 = new ArrayList<>(list);
+
                     if(w.getWordName().equals(s) && w.getLink().equals(link)){
                         wordAddToDatabase = new Words(w.getId(), w.getWordName(), w.getWordCount() + 1, w.getLink());
                         if(getWordsCache(wordAddToDatabase) == null){
                             addWordsCache(wordAddToDatabase);
                         }
                         System.out.println("list.size() " + list.size());
-//                        list2.remove(w.getId()-1);
                         list2.set(w.getId() - 1, wordAddToDatabase);
 
                         //                    sql.replaceWord(wordAddToDatabase);
@@ -85,11 +84,12 @@ public class RemoteWordsParsingServer implements WordsParsing {
                         addWordsCache(wordAddToDatabase);
                         //                    sql.addWords(wordAddToDatabase);
                     }
-                    list.clear();
-                    list.addAll(list2);
+
 
                 }
-
+//                list.clear();
+//                list.addAll(list2);
+                list = list2;
             }
             else{
                 wordAddToDatabase = new Words(1, s, 1, link);
