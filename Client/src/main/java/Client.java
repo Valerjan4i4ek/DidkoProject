@@ -32,26 +32,19 @@ public class Client {
         List<Words> linkList = getLinkByWord(list, word);
     }
     public static List<Words> returnCyrillicWords(List<String> links) throws RemoteException, IOException {
-        Map<String, Words> map = null;
-        List<Words> list = new ArrayList<>();
-        map = wordsParsing.returnCyrillicWords(links);
-        for(Map.Entry<String, Words> entry : map.entrySet()){
-            System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount() + " " + entry.getValue().getLink());
-            list.add(entry.getValue());
+//        Map<String, Words> map = null;
+//        List<Words> list = new ArrayList<>();
+//        map = wordsParsing.returnCyrillicWords(links);
+        List<Words> list = wordsParsing.returnCyrillicWords(links);
+        for(Words words : list){
+            System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
         }
+//        for(Map.Entry<String, Words> entry : map.entrySet()){
+//            System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount());
+//            list.add(entry.getValue());
+//        }
 
         System.out.println("______________________________________________________");
-
-//        for(String link : links){
-//            map = wordsParsing.returnCyrillicWords(link);
-//            for(Map.Entry<String, Words> entry : map.entrySet()){
-//                System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount() + " " + entry.getValue().getLink());
-//                list.add(entry.getValue());
-//            }
-//
-//            System.out.println("______________________________________________________");
-//
-//        }
 
         return list;
     }

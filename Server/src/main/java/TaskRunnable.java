@@ -17,9 +17,9 @@ public class TaskRunnable implements Runnable{
     public void run() {
         try {
             if (listLinks != null && !listLinks.isEmpty()){
-                System.out.println("Start " + Thread.currentThread().getId());
+//                System.out.println("Start " + Thread.currentThread().getId());
                 Thread.sleep(1000);
-                System.out.println("Finish " + Thread.currentThread().getId());
+//                System.out.println("Finish " + Thread.currentThread().getId());
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

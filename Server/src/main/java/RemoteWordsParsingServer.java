@@ -56,41 +56,56 @@ public class RemoteWordsParsingServer implements WordsParsing {
         return sb;
     }
 
-    public static Map<String, Words> addWord(StringBuffer stringBuffer, String link){
-        Map<String, Words> map = new HashMap<>();
+    public static List<Words> addWord(StringBuffer stringBuffer, String link){
+//        Map<String, Words> map = new HashMap<>();
         String word = stringBuffer.toString().toLowerCase();
         String[] words = word.split(" ");
         Words wordAddToDatabase;
+        List<Words> list = new ArrayList<>();
+
         for(String s : words){
-            if(map != null && !map.isEmpty()){
-                if(map.containsKey(s) && map.get(s).getLink().equals(link)){
-                    wordAddToDatabase = new Words(map.get(s).getId(), s, map.get(s).getWordCount()+1, link);
-                    if(getWordsCache(wordAddToDatabase) == null){
-                        addWordsCache(wordAddToDatabase);
+            if(!list.isEmpty()){
+
+                for(Words w : list){
+                    List<Words> list2 = new ArrayList<>(list);
+                    if(w.getWordName().equals(s) && w.getLink().equals(link)){
+                        wordAddToDatabase = new Words(w.getId(), w.getWordName(), w.getWordCount() + 1, w.getLink());
+                        if(getWordsCache(wordAddToDatabase) == null){
+                            addWordsCache(wordAddToDatabase);
+                        }
+                        System.out.println("list.size() " + list.size());
+//                        list2.remove(w.getId()-1);
+                        list2.set(w.getId() - 1, wordAddToDatabase);
+
+                        //                    sql.replaceWord(wordAddToDatabase);
                     }
-                    map.replace(s, wordAddToDatabase);
-//                    sql.replaceWord(wordAddToDatabase);
+                    else{
+                        wordAddToDatabase = new Words(list2.size() + 1, s, 1, link);
+                        list2.add(wordAddToDatabase);
+                        addWordsCache(wordAddToDatabase);
+                        //                    sql.addWords(wordAddToDatabase);
+                    }
+                    list.clear();
+                    list.addAll(list2);
+
                 }
-                else {
-                    wordAddToDatabase = new Words(map.size() + 1, s, 1, link);
-                    map.put(s, wordAddToDatabase);
-                    addWordsCache(wordAddToDatabase);
-//                    sql.addWords(wordAddToDatabase);
-                }
+
             }
             else{
                 wordAddToDatabase = new Words(1, s, 1, link);
-                map.put(s, wordAddToDatabase);
+                list.add(wordAddToDatabase);
                 addWordsCache(wordAddToDatabase);
-//                sql.addWords(wordAddToDatabase);
+                //                sql.addWords(wordAddToDatabase);
             }
         }
-        return map;
+        return list;
     }
     @Override
-    public Map<String, Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException {
-        Map<String, Words> addMap = new HashMap<>();
-        Map<String, Words> returnMap = new HashMap<>();
+    public List<Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException {
+//        Map<String, Words> addMap = new HashMap<>();
+//        Map<String, Words> returnMap = new HashMap<>();
+        List<Words> addList = new ArrayList<>();
+        List<Words> returnList = new ArrayList<>();
         List<WordsAndLinks> list = new LinkedList<>();
 
         TaskRunnable taskRunnable = new TaskRunnable(listLinks);
@@ -113,8 +128,8 @@ public class RemoteWordsParsingServer implements WordsParsing {
             throw new RuntimeException(e);
         }
         for(WordsAndLinks wordsAndLinks : list){
-            addMap = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
-            returnMap.putAll(addMap);
+            addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
+            returnList.addAll(addList);
             listLinks.remove(wordsAndLinks.getLink());
         }
         System.out.println("after try catch");
@@ -127,7 +142,7 @@ public class RemoteWordsParsingServer implements WordsParsing {
         executorService.shutdown();
         System.out.println("FINISHED executorService");
 
-        return returnMap;
+        return returnList;
     }
 
     @Override
