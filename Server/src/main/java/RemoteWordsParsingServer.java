@@ -13,48 +13,6 @@ public class RemoteWordsParsingServer implements WordsParsing {
     static WordsCache wordsCache = new WordsCache();
     ExecutorService executorService = Executors.newFixedThreadPool(100);
     ScheduledExecutorService ses = Executors.newScheduledThreadPool(100);
-    public static String getURLData(String link) throws IOException {
-        URL urlObject = new URL(link);
-        HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", USER_AGENT);
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode == 404) {
-            throw new IllegalArgumentException();
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
-
-        return response.toString();
-    }
-    public StringBuffer parsingCyrillicWords(String link) throws IOException {
-        String result = getURLData(link);
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < result.length(); i++) {
-            if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
-                if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else if(result.charAt(i-1)==0 && result.charAt(i+1)==0){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else if(result.charAt(i+1)=='.' || result.charAt(i+1)==',' || result.charAt(i+1)=='?'){
-                    sb.append(result.charAt(i) + " ");
-                }
-                else{
-                    sb.append(result.charAt(i));
-                }
-            }
-        }
-        return sb;
-    }
 
     public static List<Words> addWord(StringBuffer stringBuffer, String link){
         String word = stringBuffer.toString().toLowerCase();
@@ -92,7 +50,7 @@ public class RemoteWordsParsingServer implements WordsParsing {
         for(Map.Entry<String, Words> entry : map.entrySet()){
             list.add(entry.getValue());
         }
-        System.out.println("goodbye list");
+
         return list;
     }
     @Override
@@ -109,15 +67,13 @@ public class RemoteWordsParsingServer implements WordsParsing {
 
         try {
             list = sub.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
         for(WordsAndLinks wordsAndLinks : list){
             addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
             returnList.addAll(addList);
-            listLinks.remove(wordsAndLinks.getLink());
+//            listLinks.remove(wordsAndLinks.getLink());
         }
         System.out.println("OLOLO");
 
@@ -152,6 +108,48 @@ public class RemoteWordsParsingServer implements WordsParsing {
         }
         return null;
     }
+    //    public static String getURLData(String link) throws IOException {
+//        URL urlObject = new URL(link);
+//        HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
+//        connection.setRequestMethod("GET");
+//        connection.setRequestProperty("User-Agent", USER_AGENT);
+//
+//        int responseCode = connection.getResponseCode();
+//        if (responseCode == 404) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//        String inputLine;
+//        StringBuffer response = new StringBuffer();
+//        while ((inputLine = in.readLine()) != null) {
+//            response.append(inputLine);
+//        }
+//        in.close();
+//
+//        return response.toString();
+//    }
+//    public StringBuffer parsingCyrillicWords(String link) throws IOException {
+//        String result = getURLData(link);
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i < result.length(); i++) {
+//            if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
+//                if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
+//                    sb.append(result.charAt(i) + " ");
+//                }
+//                else if(result.charAt(i-1)==0 && result.charAt(i+1)==0){
+//                    sb.append(result.charAt(i) + " ");
+//                }
+//                else if(result.charAt(i+1)=='.' || result.charAt(i+1)==',' || result.charAt(i+1)=='?'){
+//                    sb.append(result.charAt(i) + " ");
+//                }
+//                else{
+//                    sb.append(result.charAt(i));
+//                }
+//            }
+//        }
+//        return sb;
+//    }
 
 //    @Override
 //    public Map<String, Words> returnCyrillicWords(String link) throws RemoteException, IOException {

@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class TaskRunnable implements Runnable{
-    private List<String> listLinks;
+    private final List<String> listLinks;
 
     public TaskRunnable(List<String> listLinks) {
         this.listLinks = listLinks;
