@@ -10,14 +10,7 @@ import java.util.concurrent.Callable;
 
 public class TaskCallable implements Callable<List<WordsAndLinks>> {
     private final static String USER_AGENT = "Chrome/104.0.0.0";
-//    private String link;
-//
-//    public Task(String link) {
-//        this.link = link;
-//    }
-//public String getLink() {
-//    return link;
-//}
+
     private List<String> links;
 
     public TaskCallable(List<String> links) {
@@ -65,11 +58,9 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
         StringBuffer result = new StringBuffer();
 
         for(WordsAndLinks wordsAndLinks : list){
-            System.out.println("start 1 cycle in pars method");
             result = wordsAndLinks.getStringBuffer();
 
             for (int i = 0; i < result.length(); i++) {
-//                System.out.println("start 2 cycle in pars method");
                 if(Character.UnicodeBlock.of(result.charAt(i)).equals(Character.UnicodeBlock.CYRILLIC)){
                     if(result.charAt(i+1)==' ' || result.charAt(i+1)=='-' || result.charAt(i+1)=='‑'){
                         sb.append(result.charAt(i) + " ");
@@ -89,9 +80,7 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
                     }
                 }
             }
-            System.out.println("finish 1 cycle in pars method");
         }
-        System.out.println("return pars list");
         return returnList;
     }
 }

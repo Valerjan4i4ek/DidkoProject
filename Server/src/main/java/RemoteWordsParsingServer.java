@@ -61,48 +61,36 @@ public class RemoteWordsParsingServer implements WordsParsing {
         String[] words = word.split(" ");
         Words wordAddToDatabase;
         List<Words> list = new ArrayList<>();
-        List<Words> list2 = null;
+        Map<String, Words> map = new HashMap<>();
 
         for(String s : words){
-            if(!list.isEmpty()){
-                list2 = new ArrayList<>(list);
-                for(Words w : list){
-                    if(w.getWordName().equals(s)/* && w.getLink().equals(link)*/){
-                        wordAddToDatabase = new Words(w.getId(), w.getWordName(), w.getWordCount() + 1, w.getLink());
-                        if(getWordsCache(wordAddToDatabase) == null){
-                            addWordsCache(wordAddToDatabase);
-                        }
-
-                        list2.remove(w.getId()-1);
-                        list2.add(w.getId() - 1, wordAddToDatabase);
-                        sql.replaceWord(wordAddToDatabase);
-                    }
-                    else{
-                        wordAddToDatabase = new Words(w.getId() + 1, s, 1, link);
-                        list2.add(wordAddToDatabase);
+            if(map != null && !map.isEmpty()){
+                if(map.containsKey(s)){
+                    wordAddToDatabase = new Words(map.get(s).getId(), map.get(s).getWordName(),
+                            map.get(s).getWordCount()+1, map.get(s).getLink());
+                    map.put(s, wordAddToDatabase);
+                    if(getWordsCache(wordAddToDatabase) == null){
                         addWordsCache(wordAddToDatabase);
-                        sql.addWords(wordAddToDatabase);
                     }
+//                    sql.replaceWord(wordAddToDatabase);
+                }
+                else{
+                    wordAddToDatabase = new Words(map.size() + 1, s, 1, link);
+                    map.put(s, wordAddToDatabase);
+                    addWordsCache(wordAddToDatabase);
+//                    sql.addWords(wordAddToDatabase);
                 }
             }
             else{
                 wordAddToDatabase = new Words(1, s, 1, link);
-                list.add(wordAddToDatabase);
+                map.put(s, wordAddToDatabase);
                 addWordsCache(wordAddToDatabase);
-                sql.addWords(wordAddToDatabase);
+//              sql.addWords(wordAddToDatabase);
             }
+        }
 
-            if (list2 != null) {
-                for(Words w : list2){
-                    if(w.getId() == list.get(w.getId()-1).getId()){
-                        list.remove(w.getId()-1);
-                        list.add(w.getId()-1, w);
-                    }
-                    else{
-                        list.add(w);
-                    }
-                }
-            }
+        for(Map.Entry<String, Words> entry : map.entrySet()){
+            list.add(entry.getValue());
         }
         return list;
     }
@@ -115,15 +103,11 @@ public class RemoteWordsParsingServer implements WordsParsing {
         TaskRunnable taskRunnable = new TaskRunnable(listLinks);
         TaskCallable taskCallable = new TaskCallable(listLinks);
         ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
-        System.out.println("scheduledFuture");
 
         Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
-        System.out.println("executorService 1");
-
 
         try {
             list = sub.get();
-            System.out.println("executorService 2");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
@@ -134,13 +118,10 @@ public class RemoteWordsParsingServer implements WordsParsing {
             returnList.addAll(addList);
             listLinks.remove(wordsAndLinks.getLink());
         }
-        System.out.println("after try catch");
 
         ses.shutdown();
-        System.out.println("FINISHED scheduledFuture");
 
         executorService.shutdown();
-        System.out.println("FINISHED executorService");
 
         return returnList;
     }
