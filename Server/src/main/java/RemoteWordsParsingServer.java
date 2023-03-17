@@ -69,34 +69,29 @@ public class RemoteWordsParsingServer implements WordsParsing {
                 for(Words w : list){
                     if(w.getWordName().equals(s)/* && w.getLink().equals(link)*/){
                         wordAddToDatabase = new Words(w.getId(), w.getWordName(), w.getWordCount() + 1, w.getLink());
-//                        if(getWordsCache(wordAddToDatabase) == null){
-//                            addWordsCache(wordAddToDatabase);
-//                        }
+                        if(getWordsCache(wordAddToDatabase) == null){
+                            addWordsCache(wordAddToDatabase);
+                        }
 
                         list2.remove(w.getId()-1);
                         list2.add(w.getId() - 1, wordAddToDatabase);
-
-//                        sql.replaceWord(wordAddToDatabase);
+                        sql.replaceWord(wordAddToDatabase);
                     }
                     else{
                         wordAddToDatabase = new Words(w.getId() + 1, s, 1, link);
                         list2.add(wordAddToDatabase);
-//                        addWordsCache(wordAddToDatabase);
-//                        sql.addWords(wordAddToDatabase);
+                        addWordsCache(wordAddToDatabase);
+                        sql.addWords(wordAddToDatabase);
                     }
-
-
                 }
-;
-
-
             }
             else{
                 wordAddToDatabase = new Words(1, s, 1, link);
                 list.add(wordAddToDatabase);
-//                addWordsCache(wordAddToDatabase);
-//                sql.addWords(wordAddToDatabase);
+                addWordsCache(wordAddToDatabase);
+                sql.addWords(wordAddToDatabase);
             }
+
             if (list2 != null) {
                 for(Words w : list2){
                     if(w.getId() == list.get(w.getId()-1).getId()){
@@ -113,8 +108,6 @@ public class RemoteWordsParsingServer implements WordsParsing {
     }
     @Override
     public List<Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException {
-//        Map<String, Words> addMap = new HashMap<>();
-//        Map<String, Words> returnMap = new HashMap<>();
         List<Words> addList = new ArrayList<>();
         List<Words> returnList = new ArrayList<>();
         List<WordsAndLinks> list = new LinkedList<>();
@@ -123,8 +116,6 @@ public class RemoteWordsParsingServer implements WordsParsing {
         TaskCallable taskCallable = new TaskCallable(listLinks);
         ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
         System.out.println("scheduledFuture");
-//        executorService.submit(taskCallable);
-//        System.out.println("executorService");
 
         Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
         System.out.println("executorService 1");
@@ -144,8 +135,6 @@ public class RemoteWordsParsingServer implements WordsParsing {
             listLinks.remove(wordsAndLinks.getLink());
         }
         System.out.println("after try catch");
-
-
 
         ses.shutdown();
         System.out.println("FINISHED scheduledFuture");
