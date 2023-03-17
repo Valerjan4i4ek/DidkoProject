@@ -11,8 +11,8 @@ public class RemoteWordsParsingServer implements WordsParsing {
     private final static String USER_AGENT = "Chrome/104.0.0.0";
     static MySQLClass sql = new MySQLClass();
     static WordsCache wordsCache = new WordsCache();
-    ExecutorService executorService = Executors.newFixedThreadPool(3);
-    ScheduledExecutorService ses = Executors.newScheduledThreadPool(10);
+    ExecutorService executorService = Executors.newFixedThreadPool(100);
+    ScheduledExecutorService ses = Executors.newScheduledThreadPool(100);
     public static String getURLData(String link) throws IOException {
         URL urlObject = new URL(link);
         HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
@@ -57,45 +57,56 @@ public class RemoteWordsParsingServer implements WordsParsing {
     }
 
     public static List<Words> addWord(StringBuffer stringBuffer, String link){
-//        Map<String, Words> map = new HashMap<>();
         String word = stringBuffer.toString().toLowerCase();
         String[] words = word.split(" ");
         Words wordAddToDatabase;
         List<Words> list = new ArrayList<>();
+        List<Words> list2 = null;
 
         for(String s : words){
             if(!list.isEmpty()){
-                List<Words> list2 = new ArrayList<>(list);
+                list2 = new ArrayList<>(list);
                 for(Words w : list){
-
-                    if(w.getWordName().equals(s) && w.getLink().equals(link)){
+                    if(w.getWordName().equals(s)/* && w.getLink().equals(link)*/){
                         wordAddToDatabase = new Words(w.getId(), w.getWordName(), w.getWordCount() + 1, w.getLink());
-                        if(getWordsCache(wordAddToDatabase) == null){
-                            addWordsCache(wordAddToDatabase);
-                        }
-                        System.out.println("list.size() " + list.size());
-                        list2.set(w.getId() - 1, wordAddToDatabase);
+//                        if(getWordsCache(wordAddToDatabase) == null){
+//                            addWordsCache(wordAddToDatabase);
+//                        }
 
-                        //                    sql.replaceWord(wordAddToDatabase);
+                        list2.remove(w.getId()-1);
+                        list2.add(w.getId() - 1, wordAddToDatabase);
+
+//                        sql.replaceWord(wordAddToDatabase);
                     }
                     else{
-                        wordAddToDatabase = new Words(list2.size() + 1, s, 1, link);
+                        wordAddToDatabase = new Words(w.getId() + 1, s, 1, link);
                         list2.add(wordAddToDatabase);
-                        addWordsCache(wordAddToDatabase);
-                        //                    sql.addWords(wordAddToDatabase);
+//                        addWordsCache(wordAddToDatabase);
+//                        sql.addWords(wordAddToDatabase);
                     }
 
 
                 }
-//                list.clear();
-//                list.addAll(list2);
-                list = list2;
+;
+
+
             }
             else{
                 wordAddToDatabase = new Words(1, s, 1, link);
                 list.add(wordAddToDatabase);
-                addWordsCache(wordAddToDatabase);
-                //                sql.addWords(wordAddToDatabase);
+//                addWordsCache(wordAddToDatabase);
+//                sql.addWords(wordAddToDatabase);
+            }
+            if (list2 != null) {
+                for(Words w : list2){
+                    if(w.getId() == list.get(w.getId()-1).getId()){
+                        list.remove(w.getId()-1);
+                        list.add(w.getId()-1, w);
+                    }
+                    else{
+                        list.add(w);
+                    }
+                }
             }
         }
         return list;
