@@ -92,6 +92,7 @@ public class RemoteWordsParsingServer implements WordsParsing {
         for(Map.Entry<String, Words> entry : map.entrySet()){
             list.add(entry.getValue());
         }
+        System.out.println("goodbye list");
         return list;
     }
     @Override
@@ -118,10 +119,12 @@ public class RemoteWordsParsingServer implements WordsParsing {
             returnList.addAll(addList);
             listLinks.remove(wordsAndLinks.getLink());
         }
+        System.out.println("OLOLO");
 
         ses.shutdown();
 
         executorService.shutdown();
+        System.out.println("OLOLO2");
 
         return returnList;
     }

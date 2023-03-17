@@ -81,6 +81,7 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
                 }
             }
         }
+        System.out.println("return pars");
         return returnList;
     }
 }

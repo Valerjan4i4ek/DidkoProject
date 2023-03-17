@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -8,7 +9,7 @@ import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Client {
+public class Client implements Serializable {
     public static final String UNIQUE_BINDING_NAME = "server.WordsParsing";
     public static final List<String> LIST_LINKS = new LinkedList<>();
     public static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -28,6 +29,7 @@ public class Client {
     }
     public static void main(String[] args) throws RemoteException, IOException {
         List<Words> list = returnCyrillicWords(LIST_LINKS);
+        System.out.println("Add the word");
         String word = reader.readLine();
         List<Words> linkList = getLinkByWord(list, word);
     }
@@ -35,7 +37,9 @@ public class Client {
 //        Map<String, Words> map = null;
 //        List<Words> list = new ArrayList<>();
 //        map = wordsParsing.returnCyrillicWords(links);
+        System.out.println("bI4");
         List<Words> list = wordsParsing.returnCyrillicWords(links);
+        System.out.println("bI4 2");
         for(Words words : list){
             System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
         }
