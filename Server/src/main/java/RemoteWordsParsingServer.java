@@ -73,7 +73,7 @@ public class RemoteWordsParsingServer implements WordsParsing {
         for(WordsAndLinks wordsAndLinks : list){
             addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
             returnList.addAll(addList);
-//            listLinks.remove(wordsAndLinks.getLink());
+            listLinks.remove(wordsAndLinks.getLink());
         }
         System.out.println("OLOLO");
 

@@ -1,3 +1,5 @@
+import org.w3c.dom.ls.LSOutput;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +14,7 @@ import java.util.stream.Collectors;
 public class Client implements Serializable {
     public static final String UNIQUE_BINDING_NAME = "server.WordsParsing";
     public static final List<String> LIST_LINKS = new LinkedList<>();
+    public static List<Words> list = new ArrayList<>();
     public static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     static Registry registry;
     static WordsParsing wordsParsing;
@@ -28,35 +31,58 @@ public class Client implements Serializable {
         }
     }
     public static void main(String[] args) throws RemoteException, IOException {
-        List<Words> list = returnCyrillicWords(LIST_LINKS);
-        System.out.println("Add the word");
-        String word = reader.readLine();
-        List<Words> linkList = getLinkByWord(list, word);
+//        List<Words> list = new ArrayList<>();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    list = returnCyrillicWords(LIST_LINKS);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Add the word");
+                String word = null;
+//                String exit = null;
+                try {
+                    word = reader.readLine();
+                    List<Words> linkList = getLinkByWord(list, word);
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
     public static List<Words> returnCyrillicWords(List<String> links) throws RemoteException, IOException {
-//        Map<String, Words> map = null;
-//        List<Words> list = new ArrayList<>();
-//        map = wordsParsing.returnCyrillicWords(links);
         System.out.println("bI4");
         List<Words> list = wordsParsing.returnCyrillicWords(links);
         System.out.println("bI4 2");
         for(Words words : list){
             System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
         }
-//        for(Map.Entry<String, Words> entry : map.entrySet()){
-//            System.out.println(entry.getValue().getId() + " " + entry.getKey() + " " +  entry.getValue().getWordCount());
-//            list.add(entry.getValue());
-//        }
-
         System.out.println("______________________________________________________");
 
         return list;
     }
     public static List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException{
         List<Words> currentList = wordsParsing.getLinkByWord(list, word);
+//        Scanner scanner = new Scanner(System.in);
         for(Words words : currentList){
             System.out.println(words.getLink() + " " + words.getWordCount());
         }
+//        System.out.println("Again Y/N");
+//        if(scanner.nextLine().equalsIgnoreCase("y")){
+//            getLinkByWord(list, word);
+//        }
+//        else{
+//            System.out.println("GOODBYE");
+//        }
         return currentList;
     }
 }

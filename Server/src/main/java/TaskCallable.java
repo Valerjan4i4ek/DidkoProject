@@ -22,10 +22,10 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
     }
 
     @Override
-    public List<WordsAndLinks> call() throws Exception {
+    public synchronized List<WordsAndLinks> call() throws Exception {
         return parsingCyrillicWords(getLinks());
     }
-    public static List<WordsAndLinks> getURLData(List<String> listLinks) throws IOException{
+    public synchronized static List<WordsAndLinks> getURLData(List<String> listLinks) throws IOException{
         List<WordsAndLinks> list = new LinkedList<>();
         if(listLinks != null && !listLinks.isEmpty()){
             for(String link : listLinks){
@@ -54,7 +54,7 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
         return list;
     }
 
-    public List<WordsAndLinks> parsingCyrillicWords(List<String> listLinks) throws IOException{
+    public synchronized List<WordsAndLinks> parsingCyrillicWords(List<String> listLinks) throws IOException{
         List<WordsAndLinks> list = getURLData(listLinks);
         List<WordsAndLinks> returnList = new LinkedList<>();
 

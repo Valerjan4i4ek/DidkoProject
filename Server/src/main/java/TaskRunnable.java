@@ -14,7 +14,7 @@ public class TaskRunnable implements Runnable{
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         try {
             if (listLinks != null && !listLinks.isEmpty()){
 //                System.out.println("Start " + Thread.currentThread().getId());
