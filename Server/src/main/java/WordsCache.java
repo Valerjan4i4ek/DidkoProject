@@ -11,4 +11,13 @@ public class WordsCache {
     public Words getWordsCache(Words words){
         return wordsCache.get(words.getId() - 1);
     }
+
+    public Words getWordsCache(String word){
+        for(Words words : wordsCache){
+            if(words.getWordName().equals(word)){
+                return words;
+            }
+        }
+        return null;
+    }
 }

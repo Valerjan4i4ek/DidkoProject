@@ -7,12 +7,48 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class RemoteWordsParsingServer implements WordsParsing {
+public class RemoteWordsParsingServer extends Thread implements WordsParsing {
     private final static String USER_AGENT = "Chrome/104.0.0.0";
+    public static List<String> LIST_LINKS = new LinkedList<>();
+    public List<String> LIST_LINKS_FOR_PARSING = new LinkedList<>();
     static MySQLClass sql = new MySQLClass();
     static WordsCache wordsCache = new WordsCache();
-    ExecutorService executorService = Executors.newFixedThreadPool(100);
-    ScheduledExecutorService ses = Executors.newScheduledThreadPool(100);
+    ExecutorService executorService = Executors.newFixedThreadPool(10);
+    ScheduledExecutorService ses = Executors.newScheduledThreadPool(10);
+
+    Thread thread;
+    static {
+        LIST_LINKS.add("https://javarush.com/");
+        LIST_LINKS.add("https://music.youtube.com/");
+        LIST_LINKS.add("https://vertex-academy.com/tutorials/ru/samouchitel-po-java-s-nulya/");
+    }
+
+    RemoteWordsParsingServer(){
+        start();
+    }
+
+    @Override
+    public void run() {
+        while (true){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            if(LIST_LINKS != null && !LIST_LINKS.isEmpty()){
+                LIST_LINKS_FOR_PARSING = getListLinks();
+                System.out.println("gogaBau");
+            }
+        }
+    }
+
+    public List<String> getListLinks(){
+
+        List<String> list = new ArrayList<>(LIST_LINKS);
+        LIST_LINKS.clear();
+
+        return list;
+    }
 
     public static List<Words> addWord(StringBuffer stringBuffer, String link){
         String word = stringBuffer.toString().toLowerCase();
@@ -54,16 +90,23 @@ public class RemoteWordsParsingServer implements WordsParsing {
         return list;
     }
     @Override
-    public List<Words> returnCyrillicWords(List<String> listLinks) throws RemoteException, IOException {
+    public List<Words> returnCyrillicWords() throws RemoteException, IOException {
+
         List<Words> addList = new ArrayList<>();
         List<Words> returnList = new ArrayList<>();
         List<WordsAndLinks> list = new LinkedList<>();
 
-        TaskRunnable taskRunnable = new TaskRunnable(listLinks);
-        TaskCallable taskCallable = new TaskCallable(listLinks);
-        ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
+        if(LIST_LINKS_FOR_PARSING != null && !LIST_LINKS_FOR_PARSING.isEmpty()){
+            System.out.println("3ae6ok");
+        }
+        else {
+            System.out.println("nu4aJIbka");
+        }
 
+//        TaskRunnable taskRunnable = new TaskRunnable(listLinks);
+        TaskCallable taskCallable = new TaskCallable(LIST_LINKS_FOR_PARSING);
         Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
+//        ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
 
         try {
             list = sub.get();
@@ -71,16 +114,17 @@ public class RemoteWordsParsingServer implements WordsParsing {
             throw new RuntimeException(e);
         }
         for(WordsAndLinks wordsAndLinks : list){
+            System.out.println("addList");
             addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
+            System.out.println("returnList");
             returnList.addAll(addList);
-            listLinks.remove(wordsAndLinks.getLink());
+            System.out.println("removeLink");
+            LIST_LINKS_FOR_PARSING.remove(wordsAndLinks.getLink());
         }
-        System.out.println("OLOLO");
 
-        ses.shutdown();
+//        ses.shutdown();
 
         executorService.shutdown();
-        System.out.println("OLOLO2");
 
         return returnList;
     }

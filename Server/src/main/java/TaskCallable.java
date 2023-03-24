@@ -1,5 +1,3 @@
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,19 +9,19 @@ import java.util.concurrent.Callable;
 public class TaskCallable implements Callable<List<WordsAndLinks>> {
     private final static String USER_AGENT = "Chrome/104.0.0.0";
 
-    private final List<String> links;
+    private final List<String> listLinks;
 
     public TaskCallable(List<String> links) {
-        this.links = links;
+        this.listLinks = links;
     }
 
-    public List<String> getLinks() {
-        return links;
+    public List<String> getListLinks() {
+        return listLinks;
     }
 
     @Override
     public synchronized List<WordsAndLinks> call() throws Exception {
-        return parsingCyrillicWords(getLinks());
+        return parsingCyrillicWords(getListLinks());
     }
     public synchronized static List<WordsAndLinks> getURLData(List<String> listLinks) throws IOException{
         List<WordsAndLinks> list = new LinkedList<>();
@@ -93,4 +91,6 @@ public class TaskCallable implements Callable<List<WordsAndLinks>> {
         System.out.println("return pars");
         return returnList;
     }
+
+
 }
