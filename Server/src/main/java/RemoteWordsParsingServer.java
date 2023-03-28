@@ -31,7 +31,7 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
     public void run() {
         while (true){
             try {
-                Thread.sleep(1000);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -63,9 +63,11 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
                     wordAddToDatabase = new Words(map.get(s).getId(), map.get(s).getWordName(),
                             map.get(s).getWordCount()+1, map.get(s).getLink());
                     map.put(s, wordAddToDatabase);
-                    if(getWordsCache(wordAddToDatabase) == null){
-                        addWordsCache(wordAddToDatabase);
+
+                    if(getWordsCache(s) != null){
+                        replaceWordsCache(wordAddToDatabase);
                     }
+                    else{addWordsCache(wordAddToDatabase);}
 //                    sql.replaceWord(wordAddToDatabase);
                 }
                 else{
@@ -90,7 +92,7 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
         return list;
     }
     @Override
-    public List<Words> returnCyrillicWords() throws RemoteException, IOException {
+    public void returnCyrillicWords() throws RemoteException, IOException {
 
         List<Words> addList = new ArrayList<>();
         List<Words> returnList = new ArrayList<>();
@@ -126,14 +128,14 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
 
         executorService.shutdown();
 
-        return returnList;
+//        return returnList;
     }
 
     @Override
-    public List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException {
+    public List<Words> getLinkByWord(String word) throws RemoteException {
         List<Words> returnList = new ArrayList<>();
-        for(Words words : list){
-            if(words.getWordName().equals(word)){
+        for(Words words : wordsCache.getListCache()){
+            if (words.getWordName().equals(word)){
                 returnList.add(words);
             }
         }
@@ -145,8 +147,11 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
     public static void addWordsCache(Words words){
         wordsCache.addWordsCache(words);
     }
+    public static void replaceWordsCache(Words words){
+        wordsCache.replaceWordsCache(words);
+    }
 
-    public static Words getWordsCache(Words words){
+    public static Words getWordsCache(String words){
         if(wordsCache.getWordsCache(words) != null){
             return wordsCache.getWordsCache(words);
         }

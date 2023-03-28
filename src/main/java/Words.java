@@ -34,4 +34,14 @@ public class Words implements Serializable, Comparable<Words> {
     public int compareTo(Words o) {
         return Integer.compare(o.getWordCount(), getWordCount());
     }
+
+    @Override
+    public String toString() {
+        return "Words{" +
+                "id=" + id +
+                ", wordName='" + wordName + '\'' +
+                ", wordCount=" + wordCount +
+                ", link='" + link + '\'' +
+                '}';
+    }
 }

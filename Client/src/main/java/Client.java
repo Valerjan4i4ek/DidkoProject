@@ -31,31 +31,32 @@ public class Client implements Serializable {
         }
     }
     public static void main(String[] args) throws RemoteException, IOException {
-        list = returnCyrillicWords();
+        returnCyrillicWords();
         System.out.println("Add the word");
         String word = reader.readLine();
-        List<Words> linkList = getLinkByWord(list, word);
+        getLinkByWord(word);
 
 
     }
-    public static List<Words> returnCyrillicWords() throws RemoteException, IOException {
+    
+    public static void returnCyrillicWords() throws RemoteException, IOException {
         System.out.println("bI4");
-        List<Words> list = wordsParsing.returnCyrillicWords();
+        wordsParsing.returnCyrillicWords();
         System.out.println("bI4 2");
-        for(Words words : list){
-            System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
-        }
+//        for(Words words : list){
+//            System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
+//        }
         System.out.println("______________________________________________________");
 
-        return list;
+//        return list;
     }
-    public static List<Words> getLinkByWord(List<Words> list, String word) throws RemoteException{
-        List<Words> currentList = wordsParsing.getLinkByWord(list, word);
+    public static void getLinkByWord(String word) throws RemoteException{
+//        List<Words> currentList = wordsParsing.getLinkByWord(word);
 
-        for(Words words : currentList){
+        for(Words words : wordsParsing.getLinkByWord(word)){
             System.out.println(words.getLink() + " " + words.getWordCount());
         }
 
-        return currentList;
+//        return currentList;
     }
 }
