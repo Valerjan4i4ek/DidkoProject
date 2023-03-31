@@ -8,13 +8,11 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class RemoteWordsParsingServer extends Thread implements WordsParsing {
-    private final static String USER_AGENT = "Chrome/104.0.0.0";
     public static List<String> LIST_LINKS = new LinkedList<>();
-    public List<String> LIST_LINKS_FOR_PARSING = new LinkedList<>();
-    static MySQLClass sql = new MySQLClass();
+    static List<String> LIST_LINKS_FOR_PARSING = new LinkedList<>();
     static WordsCache wordsCache = new WordsCache();
     ExecutorService executorService = Executors.newFixedThreadPool(10);
-    ScheduledExecutorService ses = Executors.newScheduledThreadPool(10);
+    static TaskCallable taskCallable = new TaskCallable(LIST_LINKS_FOR_PARSING);
 
     Thread thread;
     static {
@@ -49,114 +47,151 @@ public class RemoteWordsParsingServer extends Thread implements WordsParsing {
 
         return list;
     }
-
-    public static List<Words> addWord(StringBuffer stringBuffer, String link){
-        String word = stringBuffer.toString().toLowerCase();
-        String[] words = word.split(" ");
-        Words wordAddToDatabase;
-        List<Words> list = new ArrayList<>();
-        Map<String, Words> map = new HashMap<>();
-
-        for(String s : words){
-            if(map != null && !map.isEmpty()){
-                if(map.containsKey(s)){
-                    wordAddToDatabase = new Words(map.get(s).getId(), map.get(s).getWordName(),
-                            map.get(s).getWordCount()+1, map.get(s).getLink());
-                    map.put(s, wordAddToDatabase);
-
-                    if(getWordsCache(s) != null){
-                        replaceWordsCache(wordAddToDatabase);
-                    }
-                    else{addWordsCache(wordAddToDatabase);}
-//                    sql.replaceWord(wordAddToDatabase);
-                }
-                else{
-                    wordAddToDatabase = new Words(map.size() + 1, s, 1, link);
-                    map.put(s, wordAddToDatabase);
-                    addWordsCache(wordAddToDatabase);
-//                    sql.addWords(wordAddToDatabase);
-                }
-            }
-            else{
-                wordAddToDatabase = new Words(1, s, 1, link);
-                map.put(s, wordAddToDatabase);
-                addWordsCache(wordAddToDatabase);
-//              sql.addWords(wordAddToDatabase);
-            }
-        }
-
-        for(Map.Entry<String, Words> entry : map.entrySet()){
-            list.add(entry.getValue());
-        }
-
-        return list;
-    }
     @Override
     public void returnCyrillicWords() throws RemoteException, IOException {
 
-        List<Words> addList = new ArrayList<>();
-        List<Words> returnList = new ArrayList<>();
-        List<WordsAndLinks> list = new LinkedList<>();
-
-        if(LIST_LINKS_FOR_PARSING != null && !LIST_LINKS_FOR_PARSING.isEmpty()){
-            System.out.println("3ae6ok");
-        }
-        else {
-            System.out.println("nu4aJIbka");
-        }
-
-//        TaskRunnable taskRunnable = new TaskRunnable(listLinks);
-        TaskCallable taskCallable = new TaskCallable(LIST_LINKS_FOR_PARSING);
-        Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
-//        ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
-
-        try {
-            list = sub.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-        for(WordsAndLinks wordsAndLinks : list){
-            System.out.println("addList");
-            addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
-            System.out.println("returnList");
-            returnList.addAll(addList);
-            System.out.println("removeLink");
-            LIST_LINKS_FOR_PARSING.remove(wordsAndLinks.getLink());
-        }
-
-//        ses.shutdown();
+        executorService.submit(taskCallable);
 
         executorService.shutdown();
 
-//        return returnList;
-    }
 
+    }
     @Override
     public List<Words> getLinkByWord(String word) throws RemoteException {
+
         List<Words> returnList = new ArrayList<>();
-        for(Words words : wordsCache.getListCache()){
-            if (words.getWordName().equals(word)){
-                returnList.add(words);
+        if(wordsCache.getListCache() != null && !wordsCache.getListCache().isEmpty()){
+            for(Words words : wordsCache.getListCache()){
+                if (words.getWordName().equals(word)){
+                    returnList.add(words);
+                }
             }
         }
+        else{
+            System.out.println("BLOB");
+        }
+
         Collections.sort(returnList);
 
         return returnList;
     }
 
-    public static void addWordsCache(Words words){
-        wordsCache.addWordsCache(words);
-    }
-    public static void replaceWordsCache(Words words){
-        wordsCache.replaceWordsCache(words);
+
+    public void addWordsCache() throws RemoteException {
+        List<Words> list;
+        try {
+            list = taskCallable.call();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        for(Words words : list){
+            wordsCache.addWordsCache(words);
+        }
     }
 
-    public static Words getWordsCache(String words){
-        if(wordsCache.getWordsCache(words) != null){
-            return wordsCache.getWordsCache(words);
-        }
-        return null;
-    }
+
+//    public static List<Words> addWord(StringBuffer stringBuffer, String link){
+//        String word = stringBuffer.toString().toLowerCase();
+//        String[] words = word.split(" ");
+//        Words wordAddToDatabase;
+//        List<Words> list = new ArrayList<>();
+//        Map<String, Words> map = new HashMap<>();
+//
+//        for(String s : words){
+//            if(map != null && !map.isEmpty()){
+//                if(map.containsKey(s)){
+//                    wordAddToDatabase = new Words(map.get(s).getId(), map.get(s).getWordName(),
+//                            map.get(s).getWordCount()+1, map.get(s).getLink());
+//                    map.put(s, wordAddToDatabase);
+//
+//                    if(getWordsCache(s) != null){
+//                        replaceWordsCache(wordAddToDatabase);
+//                    }
+//                    else{addWordsCache(wordAddToDatabase);}
+////                    sql.replaceWord(wordAddToDatabase);
+//                }
+//                else{
+//                    wordAddToDatabase = new Words(map.size() + 1, s, 1, link);
+//                    map.put(s, wordAddToDatabase);
+//                    addWordsCache(wordAddToDatabase);
+////                    sql.addWords(wordAddToDatabase);
+//                }
+//            }
+//            else{
+//                wordAddToDatabase = new Words(1, s, 1, link);
+//                map.put(s, wordAddToDatabase);
+//                addWordsCache(wordAddToDatabase);
+////              sql.addWords(wordAddToDatabase);
+//            }
+//        }
+//
+//        for(Map.Entry<String, Words> entry : map.entrySet()){
+//            list.add(entry.getValue());
+//        }
+//
+//        return list;
+//    }
+//    @Override
+//    public void returnCyrillicWords() throws RemoteException, IOException {
+//        TaskCallable taskCallable = new TaskCallable(LIST_LINKS_FOR_PARSING);
+//        executorService.submit(taskCallable);
+//        executorService.shutdown();
+//        List<Words> addList = new ArrayList<>();
+//        List<Words> returnList = new ArrayList<>();
+//        List<WordsAndLinks> list = new LinkedList<>();
+//
+//        if(LIST_LINKS_FOR_PARSING != null && !LIST_LINKS_FOR_PARSING.isEmpty()){
+//            System.out.println("3ae6ok");
+//        }
+//        else {
+//            System.out.println("nu4aJIbka");
+//        }
+//
+//        TaskRunnable taskRunnable = new TaskRunnable(listLinks);
+//
+//        Future<List<WordsAndLinks>> sub = executorService.submit(taskCallable);
+//
+//        ses.scheduleAtFixedRate(taskRunnable, 1, 1, TimeUnit.SECONDS);
+//
+//        try {
+//            list = sub.get();
+//        } catch (InterruptedException | ExecutionException e) {
+//            throw new RuntimeException(e);
+//        }
+//        for(WordsAndLinks wordsAndLinks : list){
+//            System.out.println("addList");
+//            addList = addWord(wordsAndLinks.getStringBuffer(), wordsAndLinks.getLink());
+//            System.out.println("returnList");
+//            returnList.addAll(addList);
+//            System.out.println("removeLink");
+////            LIST_LINKS_FOR_PARSING.remove(wordsAndLinks.getLink());
+//        }
+//
+//        ses.shutdown();
+//
+//
+//
+//        return returnList;
+//    }
+
+
+
+//    public static void addWordsCache(Words words){
+//        wordsCache.addWordsCache(words);
+//    }
+//    public static void replaceWordsCache(Words words){
+//        wordsCache.replaceWordsCache(words);
+//    }
+//
+//    public static Words getWordsCache(String words){
+//        if(wordsCache.getWordsCache(words) != null){
+//            return wordsCache.getWordsCache(words);
+//        }
+//        return null;
+//    }
+
+
+
     //    public static String getURLData(String link) throws IOException {
 //        URL urlObject = new URL(link);
 //        HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();

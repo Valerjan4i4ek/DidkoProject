@@ -43,6 +43,7 @@ public class Client implements Serializable {
         System.out.println("bI4");
         wordsParsing.returnCyrillicWords();
         System.out.println("bI4 2");
+
 //        for(Words words : list){
 //            System.out.println(words.getId() + " " + words.getWordName() + " " + words.getWordCount() + " " + words.getLink());
 //        }
